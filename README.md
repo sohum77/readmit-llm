@@ -36,7 +36,7 @@ benchmarked against a classical TF-IDF + logistic regression baseline.
 - **Data engineering on real clinical data:** cohort construction and labelling from MIMIC-III.
 - **Prompt engineering:** three strategies with structured JSON output and a robust response parser (clean JSON, chain-of-thought with a final answer line, and messy text with embedded or fenced JSON).
 - **Local LLM deployment:** Llama 3.2 3B served with Ollama, so clinical text never leaves the machine (a data-governance choice).
-- **Honest evaluation:** classical baseline, quantitative metrics, qualitative analysis, and disclosed limitations, including a comparability caveat between evaluation sets.
+- **Evaluation:** classical baseline, quantitative metrics, qualitative analysis, and disclosed limitations, including a comparability caveat between evaluation sets.
 
 ## Results
 

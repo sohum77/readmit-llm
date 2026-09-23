@@ -8,7 +8,7 @@ benchmarked against a classical TF-IDF + logistic regression baseline.
 **Supervisor:** Dr. Dmitri Roussinov
 **Dataset:** MIMIC-III (PhysioNet credentialed access, CITI training completed). No patient data is included in this repository.
 
-**Headline result:** all three prompting strategies (zero-shot, few-shot, chain-of-thought) underperformed the classical baseline (AUROC 0.701).
+**Headline result:** on AUROC, the only metric that is comparable across the two evaluation sets, all three prompting strategies (zero-shot, few-shot, chain-of-thought) performed near chance (0.50-0.54) and well below the classical baseline (0.70).
 
 ---
 
@@ -19,7 +19,7 @@ benchmarked against a classical TF-IDF + logistic regression baseline.
 - [x] CITI training and MIMIC-III access
 - [x] Cohort built from MIMIC-III: 53,122 admissions → 47,463 labelled admissions (5.9% 30-day readmission rate)
 - [x] Classical baseline (TF-IDF + logistic regression)
-- [x] Quantitative evaluation (AUROC, precision, recall, F1)
+- [x] Quantitative evaluation (AUROC, F1, Brier score, precision, recall)
 - [x] Qualitative case analysis
 - [x] Dissertation submitted
 
@@ -28,18 +28,35 @@ benchmarked against a classical TF-IDF + logistic regression baseline.
 - **Data engineering on real clinical data:** cohort construction and labelling from MIMIC-III.
 - **Prompt engineering:** three strategies with structured JSON output and a robust response parser (clean JSON, chain-of-thought with a final answer line, and messy text with embedded or fenced JSON).
 - **Local LLM deployment:** Llama 3.2 3B served with Ollama, so clinical text never leaves the machine (a data-governance choice).
-- **Honest evaluation:** classical baseline, quantitative metrics, qualitative analysis, and disclosed limitations.
+- **Honest evaluation:** classical baseline, quantitative metrics, qualitative analysis, and disclosed limitations, including a comparability caveat between evaluation sets.
 
 ## Results
 
-| Method | AUROC | Precision | Recall | F1 |
-|---|---|---|---|---|
-| TF-IDF + logistic regression (baseline) | 0.701 | [fill] | [fill] | [fill] |
-| Zero-shot Llama 3.2 3B | [fill] | [fill] | [fill] | [fill] |
-| Few-shot Llama 3.2 3B | [fill] | [fill] | [fill] | [fill] |
-| Chain-of-thought Llama 3.2 3B | [fill] | [fill] | [fill] | [fill] |
+### Table 1: Performance across methods
 
-Aggregate metrics are in [`results/`](results/). LLM strategies were evaluated on a 200-note stratified sample.
+| Method | AUROC | F1 (readmitted class) | Brier score | Unparsed rate | Evaluation set |
+|---|---|---|---|---|---|
+| Logistic regression (TF-IDF baseline) | 0.702 | 0.199 | 0.149 | n/a | 9,493 test admissions (~6% readmitted) |
+| Zero-shot LLM | 0.501 | 0.574 | 0.327 | 11.5% | 200 notes, balanced |
+| Few-shot LLM | 0.535 | 0.416 | 0.300 | 38.0% | 200 notes, balanced |
+| Chain-of-thought LLM | 0.544 | 0.192 | 0.287 | 36.0% | 200 notes, balanced |
+
+### Table 2: Per-class precision, recall and F1
+
+| Method | Class | Precision | Recall | F1 | Support |
+|---|---|---|---|---|---|
+| Logistic regression | Not readmitted | 0.96 | 0.82 | 0.88 | 8,937 |
+| | Readmitted | 0.13 | 0.44 | 0.20 | 556 |
+| Zero-shot LLM | Not readmitted | 0.49 | 0.31 | 0.38 | 100 |
+| | Readmitted | 0.50 | 0.68 | 0.57 | 100 |
+| Few-shot LLM | Not readmitted | 0.48 | 0.59 | 0.53 | 100 |
+| | Readmitted | 0.47 | 0.37 | 0.42 | 100 |
+| Chain-of-thought LLM | Not readmitted | 0.50 | 0.87 | 0.63 | 100 |
+| | Readmitted | 0.48 | 0.12 | 0.19 | 100 |
+
+**How to read this:** the baseline was evaluated on the full held-out test set, which has roughly 6% readmissions. The LLMs were evaluated on a balanced 200-note sample (100 readmitted, 100 not) to keep local inference tractable. Because the class balance differs, precision, recall, F1 and Brier score are **not directly comparable** between the baseline and the LLMs. AUROC is the fair comparison. Few-shot and chain-of-thought prompts also produced unparseable output on 36-38% of notes, showing that a 3B-parameter model struggles to follow a strict output format.
+
+Aggregate metrics are in [`results/`](results/).
 
 ## Architecture
 
@@ -69,8 +86,9 @@ Cohort building, the baseline and metrics have their own scripts under `src/` (s
 
 ## Limitations
 
+- The baseline and the LLMs were evaluated on different sets (full imbalanced test set versus a balanced 200-note sample), so only AUROC is directly comparable between them.
 - The train/test split is at admission level, not patient level, so patients with multiple admissions (34.6% of admissions) can appear in both sets. This may inflate results and is disclosed rather than hidden.
-- The LLM evaluation used a 200-note stratified sample and a small 3B-parameter local model. Larger models may behave differently.
+- The LLM evaluation used a small 3B-parameter local model. Larger models may behave differently, and a high unparsed rate (up to 38%) affected the few-shot and chain-of-thought runs.
 - Results come from a single dataset (MIMIC-III, one hospital system).
 
 ## Author

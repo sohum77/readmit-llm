@@ -6,11 +6,19 @@ discharge notes using prompt-engineered Large Language Models (Llama 3.2 3B via 
 benchmarked against a classical TF-IDF + logistic regression baseline.
 
 **Supervisor:** Dr. Dmitri Roussinov
-**Dataset:** MIMIC-III (PhysioNet credentialed access, CITI training completed). No patient data is included in this repository.
+**Dataset:** MIMIC-III (PhysioNet credentialed access, CITI training completed). All reported results use real MIMIC-III discharge notes. No patient data is included in this repository.
 
 **Headline result:** on AUROC, the only metric that is comparable across the two evaluation sets, all three prompting strategies (zero-shot, few-shot, chain-of-thought) performed near chance (0.50-0.54) and well below the classical baseline (0.70).
 
+> **Note on comparability:** the baseline was evaluated on the full held-out test set (about 6% readmissions), while the LLMs were evaluated on a balanced 200-note sample (100 readmitted, 100 not). Precision, recall, F1 and Brier score therefore **cannot be compared directly** between the baseline and the LLMs. AUROC is the fair comparison.
+
 ---
+
+## Key takeaways
+
+- A small locally hosted LLM (Llama 3.2 3B) with prompting alone did not beat a simple TF-IDF + logistic regression baseline at predicting readmission from discharge notes.
+- Output reliability was a major failure mode: few-shot and chain-of-thought prompts produced unparseable output on 36-38% of notes.
+- A classical baseline is a strong and necessary benchmark before reaching for an LLM.
 
 ## Status
 
@@ -41,6 +49,8 @@ benchmarked against a classical TF-IDF + logistic regression baseline.
 | Few-shot LLM | 0.535 | 0.416 | 0.300 | 38.0% | 200 notes, balanced |
 | Chain-of-thought LLM | 0.544 | 0.192 | 0.287 | 36.0% | 200 notes, balanced |
 
+F1, precision, recall and Brier score are not directly comparable across the two evaluation sets (see the note above). Compare methods on AUROC.
+
 ### Table 2: Per-class precision, recall and F1
 
 | Method | Class | Precision | Recall | F1 | Support |
@@ -54,15 +64,15 @@ benchmarked against a classical TF-IDF + logistic regression baseline.
 | Chain-of-thought LLM | Not readmitted | 0.50 | 0.87 | 0.63 | 100 |
 | | Readmitted | 0.48 | 0.12 | 0.19 | 100 |
 
-**How to read this:** the baseline was evaluated on the full held-out test set, which has roughly 6% readmissions. The LLMs were evaluated on a balanced 200-note sample (100 readmitted, 100 not) to keep local inference tractable. Because the class balance differs, precision, recall, F1 and Brier score are **not directly comparable** between the baseline and the LLMs. AUROC is the fair comparison. Few-shot and chain-of-thought prompts also produced unparseable output on 36-38% of notes, showing that a 3B-parameter model struggles to follow a strict output format.
+The high unparsed rates for few-shot and chain-of-thought prompts suggest that a 3B-parameter model struggles to follow a strict output format.
 
 Aggregate metrics are in [`results/`](results/).
 
 ## Architecture
 
 1. **Data ingestion / preprocessing:** `src/build_cohort.py`, `src/load_real_data.py`, `src/merge_dataset.py`
-2. **Prompt generation:** `src/pipeline.py:build_prompt` + `prompts/`
-3. **LLM inference and parsing:** `src/pipeline.py:predict`, `src/llm_client.py`, `src/response_parser.py`
+2. **Prompt generation:** `src/pipeline.py` and the templates in `prompts/`
+3. **LLM inference and parsing:** `src/pipeline.py`, `src/llm_client.py`, `src/response_parser.py`
 4. **Evaluation:** `src/baseline.py`, `src/compute_metrics.py`, `src/build_comparison.py`, `src/select_qualitative_cases.py`
 
 ## Data
@@ -70,19 +80,18 @@ Aggregate metrics are in [`results/`](results/).
 MIMIC-III is **not included** and cannot be redistributed. Access requires CITI training and a signed
 PhysioNet data use agreement: https://physionet.org/content/mimiciii/
 
-The example notes in `prompts/few_shot.txt` are synthetic.
+All results reported here come from real MIMIC-III discharge notes. The three worked examples in `prompts/few_shot.txt` were written by the author and are not taken from MIMIC-III. A small set of synthetic notes was used only to develop and test the pipeline before database access was granted; it is not part of the evaluation and is not included.
 
 ## Running it
 
-Requires MIMIC-III access, Python 3.10+ and [Ollama](https://ollama.com/download).
+Requires MIMIC-III access, Python 3 and [Ollama](https://ollama.com/download).
 
 ```
 pip install -r requirements.txt
 ollama pull llama3.2
-python src/pipeline.py
 ```
 
-Cohort building, the baseline and metrics have their own scripts under `src/` (see the architecture list above).
+Then run the scripts under `src/` in the order given in the architecture list above (cohort building, LLM pipeline, baseline, metrics).
 
 ## Limitations
 

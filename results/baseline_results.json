@@ -1,0 +1,9 @@
+{
+  "model": "logistic_regression_tfidf_baseline",
+  "auroc": 0.7021156488706317,
+  "f1": 0.19902120717781402,
+  "brier_score": 0.14852424972903047,
+  "n_train": 37970,
+  "n_test": 9493,
+  "test_positive_rate": 0.05856947224270515
+}

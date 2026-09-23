@@ -1,0 +1,8 @@
+# Core pipeline runs on the Python standard library + Ollama (no installs needed).
+# These are only required when you switch providers or build the baseline/evaluation later.
+
+openai>=1.0.0          # for OPENAI provider (final experiments)
+anthropic>=0.30.0      # optional, for Anthropic provider
+scikit-learn>=1.3.0    # for the classical baseline + AUC/precision/recall metrics
+pandas>=2.0.0          # data handling
+matplotlib>=3.7.0      # result plots

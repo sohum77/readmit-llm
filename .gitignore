@@ -1,0 +1,32 @@
+__pycache__/
+*.pyc
+.env
+results/*.json
+.venv/
+venv/
+# NEVER commit MIMIC-III data — it is credentialed/restricted
+data/mimic*/
+data/*.csv
+data/raw/
+data/processed/
+
+# Extra safety: ignore everything in data/ except a synthetic sample
+data/**
+!data/synthetic/
+!data/synthetic/**
+
+# Other files that should never go public
+*.pkl
+*.parquet
+*.csv.gz
+*.db
+*.zip
+*.log
+.vscode/
+.ipynb_checkpoints/
+
+# Results: publish aggregate metrics only
+results/qualitative_cases.txt
+results/predictions_*.json
+!results/metrics_*.json
+!results/baseline_results.json

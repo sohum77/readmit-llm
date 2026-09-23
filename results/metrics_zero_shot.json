@@ -1,0 +1,8 @@
+{
+  "model": "llm_zero_shot",
+  "auroc": 0.501,
+  "f1": 0.5738396624472574,
+  "brier_score": 0.3269500000000001,
+  "n_predictions": 200,
+  "n_unknown": 23
+}

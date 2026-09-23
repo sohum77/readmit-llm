@@ -1,0 +1,8 @@
+{
+  "model": "llm_cot",
+  "auroc": 0.5441499999999999,
+  "f1": 0.192,
+  "brier_score": 0.28704999999999997,
+  "n_predictions": 200,
+  "n_unknown": 72
+}
